@@ -11,11 +11,12 @@ struct Motor {
   byte in2;
 };
 
-Motor mA = {};
-Motor mB = {};
-Motor mC = {};
-Motor mD = {};
-int motors[] = [mA,mB,mC,mD];
+Motor mA = {28, 30, 32}; // back left
+Motor mB = {40, 42, 44}; // front left
+Motor mC = {38, 34, 36}; // back right
+Motor mD = {50, 46, 48}; // front right
+
+Motor motors[4] = {mA, mB, mC, mD};
 
 ros::Subscriber<std_msgs::Empty> sub("drive", &drive_cb);
 
@@ -47,21 +48,21 @@ void update_wheel(Motor mcur, int power) {
   analogWrite(mcur.en, power);
 }
 
-// drive right side of drive train
-void update_right(int power) {
-  update_wheel(mA, power);
-  update_wheel(mB, power);
-}
-
 // drive left side of drive train
 void update_left(int power) {
-  update_wheel(mC, power);
-  update_wheel(mD, power);
+  update_wheel(motors[0], power);
+  update_wheel(motors[1], power);
 }
 
-void drive_cb(const std_msgs::Int32MultiArray::ConstPtr& arr){
-  update_right(arr[0]);
-  update_left(arr[1]);
+// drive right side of drive train
+void update_right(int power) {
+  update_wheel(motors[2], power);
+  update_wheel(motors[3], power);
+}
+
+void drive_cb(const std_msgs::Int32MultiArray& arr){
+  update_left(arr[0]);
+  update_right(arr[1]);
 }
 
 void loop() {
