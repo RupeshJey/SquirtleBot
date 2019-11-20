@@ -61,6 +61,19 @@ void setup()
     pinMode(mcur.in2, OUTPUT);
 
     pinMode(LED_BUILTIN, OUTPUT);
+
+    digitalWrite(LED_BUILTIN,1);
+    delay(500);
+    digitalWrite(LED_BUILTIN,0);
+    delay(500);
+    digitalWrite(LED_BUILTIN,1);
+    delay(500);
+    digitalWrite(LED_BUILTIN,0);
+    delay(500);
+    digitalWrite(LED_BUILTIN,1);
+    delay(500);
+    digitalWrite(LED_BUILTIN,0);
+    
   }
   nh.initNode();
   nh.subscribe(sub_left);
