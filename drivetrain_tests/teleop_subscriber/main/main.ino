@@ -1,7 +1,7 @@
 
 #include <ros.h>     // Include ROS
 #include <std_msgs/Empty.h> // Include "Empty" message type
-#include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Int16.h>
 
 ros::NodeHandle nh; // Create ROS node handler
 
@@ -34,23 +34,19 @@ void update_wheel(Motor mcur, int power) {
 }
 
 // drive left side of drive train
-void update_left(int power) {
+void update_left_cb(const std_msgs::Int16& power) {
   update_wheel(motors[0], power);
   update_wheel(motors[1], power);
 }
 
 // drive right side of drive train
-void update_right(int power) {
+void update_right_cb(const std_msgs::Int16& power) {
   update_wheel(motors[2], power);
   update_wheel(motors[3], power);
 }
 
-void drive_cb(const std_msgs::Int32MultiArray arr){
-  update_left(arr(0));
-  update_right(arr(1));
-}
-
-ros::Subscriber<std_msgs::Empty> sub("drive", &drive_cb);
+ros::Subscriber<std_msgs::Int16> sub("drive_left", &drive_left_cb);
+ros::Subscriber<std_msgs::Int16> sub("drive_right", &drive_right_cb);
 
 void setup()
 {
