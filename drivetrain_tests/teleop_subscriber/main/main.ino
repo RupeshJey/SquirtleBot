@@ -35,12 +35,14 @@ void update_wheel(Motor mcur, int power) {
 
 // drive left side of drive train
 void update_left_cb(const std_msgs::Int16& power) {
+  Serial.println("Left");
   update_wheel(motors[0], int(power.data));
   update_wheel(motors[1], int(power.data));
 }
 
 // drive right side of drive train
 void update_right_cb(const std_msgs::Int16& power) {
+  Serial.println("Right");
   update_wheel(motors[2], int(power.data));
   update_wheel(motors[3], int(power.data));
 }
