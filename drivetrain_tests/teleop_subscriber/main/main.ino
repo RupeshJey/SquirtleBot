@@ -45,8 +45,8 @@ void update_right_cb(const std_msgs::Int16& power) {
   update_wheel(motors[3], power);
 }
 
-ros::Subscriber<std_msgs::Int16> sub("drive_left", &drive_left_cb);
-ros::Subscriber<std_msgs::Int16> sub("drive_right", &drive_right_cb);
+ros::Subscriber<std_msgs::Int16> sub_left("drive_left", &update_left_cb);
+ros::Subscriber<std_msgs::Int16> sub_right("drive_right", &update_right_cb);
 
 void setup()
 {
@@ -58,7 +58,8 @@ void setup()
     pinMode(mcur.in2, OUTPUT);
   }
   nh.initNode();
-  nh.subscribe(sub);
+  nh.subscribe(sub1);
+  nh.subscribe(sub2);
 }
 
 void loop() {
