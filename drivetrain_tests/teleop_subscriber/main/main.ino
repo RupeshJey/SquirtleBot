@@ -46,8 +46,8 @@ void update_right(int power) {
 }
 
 void drive_cb(const std_msgs::Int32MultiArray arr){
-  update_left(arr[0]);
-  update_right(arr[1]);
+  update_left(arr(0));
+  update_right(arr(1));
 }
 
 ros::Subscriber<std_msgs::Empty> sub("drive", &drive_cb);
@@ -64,7 +64,7 @@ void setup()
   nh.initNode();
   nh.subscribe(sub);
 }
-m
+
 void loop() {
   nh.spinOnce(); 
 }
