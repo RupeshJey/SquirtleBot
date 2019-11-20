@@ -18,21 +18,6 @@ Motor mD = {50, 46, 48}; // front right
 
 Motor motors[4] = {mA, mB, mC, mD};
 
-ros::Subscriber<std_msgs::Empty> sub("drive", &drive_cb);
-
-void setup()
-{
-  // set all the motor control pins to outputs
-  for (int i=0; i< 4; i++) {
-    mcur = motors[i];
-    pinMode(mcur.en, OUTPUT);
-    pinMode(mcur.in1, OUTPUT);
-    pinMode(mcur.in2, OUTPUT);
-  }
-  nh.initNode();
-  nh.subscribe(sub);
-}
-
 // drive individual wheels
 void update_wheel(Motor mcur, int power) {
   if (power > 0) {
@@ -60,11 +45,26 @@ void update_right(int power) {
   update_wheel(motors[3], power);
 }
 
-void drive_cb(const std_msgs::Int32MultiArray& arr){
+void drive_cb(const std_msgs::Int32MultiArray arr){
   update_left(arr[0]);
   update_right(arr[1]);
 }
 
+ros::Subscriber<std_msgs::Empty> sub("drive", &drive_cb);
+
+void setup()
+{
+  // set all the motor control pins to outputs
+  for (int i=0; i< 4; i++) {
+    Motor mcur = motors[i];
+    pinMode(mcur.en, OUTPUT);
+    pinMode(mcur.in1, OUTPUT);
+    pinMode(mcur.in2, OUTPUT);
+  }
+  nh.initNode();
+  nh.subscribe(sub);
+}
+m
 void loop() {
   nh.spinOnce(); 
 }
