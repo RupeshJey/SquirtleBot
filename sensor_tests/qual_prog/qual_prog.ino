@@ -26,6 +26,10 @@ Motor mD = {5, 46, 48}; // front right
 
 Motor motors[4] = {mA, mB, mC, mD};
 
+int redPin = 33;
+int greenPin = 37;
+int bluePin = 35;
+
 Servo dispenser;
 #define DISPENSER_PIN 6
 
@@ -81,18 +85,6 @@ void setup()
     analogWrite(mcur.en, 255);
     pinMode(LED_BUILTIN, OUTPUT);
 
-   /* digitalWrite(LED_BUILTIN,1);
-    delay(500);
-    digitalWrite(LED_BUILTIN,0);
-    delay(500);
-    digitalWrite(LED_BUILTIN,1);
-    delay(500);
-    digitalWrite(LED_BUILTIN,0);
-    delay(500);
-    digitalWrite(LED_BUILTIN,1);
-    delay(500);
-    digitalWrite(LED_BUILTIN,0);
-    */
     pinMode(DISPENSER_PIN, OUTPUT);
     dispenser.attach(DISPENSER_PIN);
     dispenser.write(1520);
@@ -102,6 +94,10 @@ void setup()
   pinMode(9, INPUT);
   pinMode(11, OUTPUT);
   pinMode(10, INPUT);
+
+  pinMode(redPin, OUTPUT); 
+  pinMode(greenPin, OUTPUT); 
+  pinMode(bluePin, OUTPUT); 
 
   int speed = 50;
   update_wheel(motors[0], speed);
@@ -158,6 +154,11 @@ void loop() {
 
   // bool alert = true;
   if ((dist1 > 10 || dist2 > 10)==true) {
+
+    digitalWrite(greenPin, LOW);
+    digitalWrite(bluePin, LOW);
+    digitalWrite(redPin, HIGH);
+    
     digitalWrite(LED_BUILTIN,1);
     update_wheel(motors[0], 0);
     update_wheel(motors[1], 0);
@@ -166,8 +167,13 @@ void loop() {
   }
   else {
     digitalWrite(LED_BUILTIN,0);
+    
       if (timer > 50) {
         int speed = 40;
+        
+        digitalWrite(greenPin, HIGH);
+        digitalWrite(bluePin, HIGH);
+        digitalWrite(redPin, LOW);
         update_wheel(motors[0], speed);
         update_wheel(motors[1], speed);
         update_wheel(motors[2], speed);
