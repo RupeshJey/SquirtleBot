@@ -3,7 +3,7 @@
 
 BOARD="arduino:avr:mega:cpu=atmega2560"
 PORT="$(readlink /dev/ttyArduino)"
-arduino --board $BOARD --port /dev/$PORT --upload sensor_tests/ultrasonic_publisher_example.ino
+arduino --board $BOARD --port /dev/$PORT --upload sensor_tests/qual_prog/qual_prog.ino
 
 exit
 
