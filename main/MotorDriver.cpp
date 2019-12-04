@@ -68,15 +68,15 @@ void MotorDriver::stop_all(){
 
 void MotorDriver::turn_right() {
 	update_left(FAST);
-	update_right(-1*FAST);
-  delay(TURN_DELAY);
+	update_right(-1*SLOW);
+  delay(TURN_RIGHT_DELAY);
   stop_all();
 }
 
 void MotorDriver::turn_left() {
-	update_left(-1*FAST);
+	update_left(-1*SLOW);
 	update_right(FAST);
-  delay(TURN_DELAY);
+  delay(TURN_LEFT_DELAY);
   stop_all();
 }
 
@@ -89,6 +89,10 @@ void MotorDriver::turn_180() {
 
 void MotorDriver::forward_fast() {
   update_drive(FAST);
+}
+
+void MotorDriver::forward_ludicrous() {
+  update_drive(LUDICROUS);
 }
 
 void MotorDriver::forward_slow() {
