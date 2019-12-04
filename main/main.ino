@@ -5,22 +5,24 @@
 #include "MotorDriver.h"
 #include "Ultron.h"
 #include "LED.h"
+#include "Safety.h"
 #include "MPU6050_tockn.h"
 #include <Wire.h>
 MPU6050 mpu6050(Wire);
 
 #define ARM_BUTTON_PIN 45
 
-
 Ultron ultron;
 MotorDriver dt;
-LED led; 
+LED led_main; 
+Safety safety; 
 Pixy2 pixy;
 
 #define X_CENTER         (pixy.frameWidth/2)
 #define BACKUP_CAP 3
 #define LINE_CAP 3
 #define SHIMMY_BACKUP 500 
+#define ARM_DELAY 3000
 
 bool lf_mode = false;
 bool us_mode = true;
@@ -104,8 +106,6 @@ void square_up(float orientation) {
   dt.stop_all();
 }
 
-
-
 void setup() {
 
   pixy.init();
@@ -117,8 +117,9 @@ void setup() {
   // dt.forward_slow();
   
   ultron.init(dw_pin_arr, ow_pin_arr);
+  safety.init();
   Serial.begin(9600);
-  led.init();
+  //led.init();
   int8_t res;
   res = pixy.line.getMainFeatures();
   Serial.println(res);
@@ -140,94 +141,108 @@ bool seen_hill = false;
 float alpha = 0.1; 
 
 void loop() {
-  
 
-  // Robot NOT SAFE. Need to recover
-	if (us_mode and !ultron.is_dw_safe()) {
-		Serial.println("NOT SAFE");
-    led.set_color(1, 0, 0);
-		shimmy();
-    led.set_color(0, 0, 0);
-	}
- 
-
-  // Robot SAFE. Drive normally
-  
-  // begin line following logic
-  if (lf_valid) {
-    int8_t res;
-    int32_t error; 
-    
-    // Get latest data from Pixy, including main vector, new intersections and new barcodes.
-    res = pixy.line.getMainFeatures();
-  
-    // if we're not line following, look for line
-    if (!lf_mode) {
-      if (res&LINE_VECTOR) {
-        if (line_cnt < LINE_CAP) {
-          line_cnt++;
-        } else {
-          lf_mode = true;
-          led.set_color(0, 1, 0);
-          backup_cnt = 0;
-          line_cnt = 0;
-        }
-      }
-    } 
-    
-    // if we are line following, do line following
-    else {
-      // If NO LINE detected, backup
-      if (res<=0) 
-      {
-        dt.back_slow();
-        delay(80);
-        dt.stop_all();
-        Serial.print("stop ");
-        Serial.println(res);
-        backup_cnt++;
-        if (backup_cnt > BACKUP_CAP) {
-          lf_mode = false;
-          led.set_color(0, 0, 0);
-          dt.forward_slow();
-        }
-      }
-    
-      // We found the vector...
-      else if (res&LINE_VECTOR)
-      {
-        backup_cnt = 0;
-        // Calculate heading error with respect to m_x1, which is the far-end of the vector,
-        // the part of the vector we're heading toward.
-        error = (int32_t)pixy.line.vectors->m_x1 - (int32_t)X_CENTER;
-        Serial.println("Error");
-        Serial.println(error);
-    
-        if (error > 5) {
-          dt.turn_right();
-        } else if (error < -5)
-        {
-          dt.turn_left();
-        } else {
-          dt.forward_slow();
-          delay(100);
-          dt.stop_all();
-        }
-      }
+  if (digitalRead(ARM_BUTTON_PIN) == 0) {
+    safety.arm_bot(); 
+    for(int i = 0; i < 3; i++) {
+      led_main.set_color(0, 1, 0);
+      delay(ARM_DELAY/6);
+      led_main.set_color(0, 0, 0);
+      delay(ARM_DELAY/6);
     }
-  }
-  
-  if (lf_mode and !ultron.is_ow_safe() and tictac_mode = false) {
-    lf_mode = false;
-    lf_valid = false;
-    us_mode = false;
-    tictac_mode = true;
+    
+  };
 
-    led.set_color(0, 0, 1);
-    dt.stop_all();
-    square_up();
-    dt.forward_ludicrous();
-  }
+  if (safety.can_run() == false) {dt.stop_all(); return;}
+
+  dt.forward_slow();
+
+//  // Robot NOT SAFE. Need to recover
+//	if (us_mode and !ultron.is_dw_safe()) {
+//		Serial.println("NOT SAFE");
+//    //led.set_color(1, 0, 0);
+//		shimmy();
+//    //led.set_color(0, 0, 0);
+//	}
+// 
+//
+//  // Robot SAFE. Drive normally
+//  
+//  // begin line following logic
+//  if (lf_valid) {
+//    int8_t res;
+//    int32_t error; 
+//    
+//    // Get latest data from Pixy, including main vector, new intersections and new barcodes.
+//    res = pixy.line.getMainFeatures();
+//  
+//    // if we're not line following, look for line
+//    if (!lf_mode) {
+//      if (res&LINE_VECTOR) {
+//        if (line_cnt < LINE_CAP) {
+//          line_cnt++;
+//        } else {
+//          lf_mode = true;
+//          //led.set_color(0, 1, 0);
+//          backup_cnt = 0;
+//          line_cnt = 0;
+//        }
+//      }
+//    } 
+//    
+//    // if we are line following, do line following
+//    else {
+//      // If NO LINE detected, backup
+//      if (res<=0) 
+//      {
+//        dt.back_slow();
+//        delay(80);
+//        dt.stop_all();
+//        Serial.print("stop ");
+//        Serial.println(res);
+//        backup_cnt++;
+//        if (backup_cnt > BACKUP_CAP) {
+//          lf_mode = false;
+//          //led.set_color(0, 0, 0);
+//          dt.forward_slow();
+//        }
+//      }
+//    
+//      // We found the vector...
+//      else if (res&LINE_VECTOR)
+//      {
+//        backup_cnt = 0;
+//        // Calculate heading error with respect to m_x1, which is the far-end of the vector,
+//        // the part of the vector we're heading toward.
+//        error = (int32_t)pixy.line.vectors->m_x1 - (int32_t)X_CENTER;
+//        Serial.println("Error");
+//        Serial.println(error);
+//    
+//        if (error > 5) {
+//          dt.turn_right();
+//        } else if (error < -5)
+//        {
+//          dt.turn_left();
+//        } else {
+//          dt.forward_slow();
+//          delay(100);
+//          dt.stop_all();
+//        }
+//      }
+//    }
+//  }
+  
+//  if (lf_mode and !ultron.is_ow_safe() and tictac_mode == false) {
+//    lf_mode = false;
+//    lf_valid = false;
+//    us_mode = false;
+//    tictac_mode = true;
+//
+//    led.set_color(0, 0, 1);
+//    dt.stop_all();
+//    square_up();
+//    dt.forward_ludicrous();
+//  }
 
   
 }
