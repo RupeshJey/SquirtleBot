@@ -48,8 +48,10 @@ float* Ultron::read_ow_data() {
 
   float* data_pkg = new float[4];
   for (int i = 0; i < 4; i++) {
+    Serial.println(owus_arr[i].read_data());
     data_pkg[i] = owus_arr[i].read_data();
   }
+  Serial.println();
   return data_pkg;
 }
 

@@ -1,36 +1,53 @@
+/*
+ * MAIN SQUIRTLEBOT CODE
+ * ME/CS/EE 129
+ * 
+ * Group Members: 
+ * Daniel Neamati
+ * Iman Wahle
+ * Spencer Morgenfeld
+ * Nick Clausen
+ * Rupesh Jeyaram
+ */
 
-#include <Pixy2.h>
-#include <PIDLoop.h>
+// Packages
 
-#include "MotorDriver.h"
-#include "Ultron.h"
-#include "LED.h"
-#include "Safety.h"
-#include "MPU6050_tockn.h"
+#include <Pixy2.h>        // Pixy package
+#include <PIDLoop.h>      // PID looping
+
+#include "MotorDriver.h"  // Controlling motors
+#include "Ultron.h"       // Handle ultrasonic sensors
+#include "LED.h"          // Handle LEDs
+#include "Safety.h"       // Handle safety components
+#include "MPU6050_tockn.h" // IMU
 #include <Wire.h>
 MPU6050 mpu6050(Wire);
 
 #define ARM_BUTTON_PIN 45
 
+// Decalre component handlers
 Ultron ultron;
 MotorDriver dt;
 LED led_main; 
 Safety safety; 
 Pixy2 pixy;
 
+// Preprocessor directives -- constants
 #define X_CENTER         (pixy.frameWidth/2)
 #define BACKUP_CAP 3
 #define LINE_CAP 3
 #define SHIMMY_BACKUP 500 
 #define ARM_DELAY 3000
 
+// Global state variables
 bool lf_mode = false;
 bool us_mode = true;
 bool tictac_mode = false;
 bool lf_valid = true; // will turn false once we reach the ramp
 
+// Ultrasonic pin settings 
 int dw_pin_arr[4][2] = {{28,29},{24,25},{10,11},{8,9}}; // lf, lb, rf, rb
-int ow_pin_arr[4][2] = {{26,27},{22,23},{12,13},{40,41}};
+int ow_pin_arr[4][2] = {{26,27},{22,23},{12,13},{40,41}}; // lf, lb, rf, rb
 // bool is_left[4] = {1,1,0,0};
 // bool is_front[4] = {1,0,1,0};
 
@@ -41,6 +58,7 @@ int ow_pin_arr[4][2] = {{26,27},{22,23},{12,13},{40,41}};
 //  return newz;
 //}
 
+// If 
 void shimmy() {
 	dt.stop_all();
  
@@ -51,7 +69,7 @@ void shimmy() {
     delay(SHIMMY_BACKUP);
     dt.turn_left();
   }
-  else if (data[1] > DW_THRESH and data[3] > DW_THRESH) { // lb, rb
+  else if (data[1] > DW_THRESH and data[3] > DW_THRESH) { // lb, rb 
     Serial.println("BOTH BACK");
     dt.forward_slow();
     delay(SHIMMY_BACKUP);
@@ -111,8 +129,6 @@ void setup() {
   pixy.init();
   pixy.setLamp(0,0);
   pixy.changeProg("line_tracking");
-  
-  delay(3000);
 
   // dt.forward_slow();
   
@@ -142,6 +158,9 @@ float alpha = 0.1;
 
 void loop() {
 
+  // If arming button is pressed, 
+  // Release the lock and prepare to proceed
+
   if (digitalRead(ARM_BUTTON_PIN) == 0) {
     safety.arm_bot(); 
     for(int i = 0; i < 3; i++) {
@@ -153,9 +172,17 @@ void loop() {
     
   };
 
+  // Disable rest of loop if the safety conditions are not met
   if (safety.can_run() == false) {dt.stop_all(); return;}
 
-  dt.forward_slow();
+  //dt.forward_slow();
+
+  if (us_mode and !ultron.is_ow_safe()) {
+    Serial.println("NOT SAFE");
+    //led.set_color(1, 0, 0);
+    // shimmy();
+    //led.set_color(0, 0, 0);
+  }
 
 //  // Robot NOT SAFE. Need to recover
 //	if (us_mode and !ultron.is_dw_safe()) {
