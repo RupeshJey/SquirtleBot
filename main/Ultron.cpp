@@ -61,6 +61,7 @@ bool Ultron::is_ow_safe() {
       safe = false;
     }
   }
+  delete[] data;
   return safe;
 }
 
@@ -72,6 +73,7 @@ bool Ultron::is_dw_safe() {
       safe = false;
     }
   }
+  delete[] data;
   return safe;
 }
 
@@ -83,6 +85,7 @@ bool Ultron::is_dw_left_safe() {
       safe = false;
     }
   }
+  delete[] data;
   return safe;
 
 }
@@ -96,6 +99,7 @@ bool Ultron::is_dw_right_safe() {
       safe = false;
     }
   }
+  delete[] data;
   return safe;
   
 }

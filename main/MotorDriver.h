@@ -10,7 +10,7 @@ struct Motor {
 #define FAST 70
 #define SLOW 40
 #define BOOST_DELAY 50
-#define TURN_DELAY 400
+#define TURN_DELAY 100
 #define TURN180_DELAY 1000
 
 class MotorDriver {
