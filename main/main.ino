@@ -1,18 +1,25 @@
 
+#include <Pixy2.h>
+#include <PIDLoop.h>
 
 #include "MotorDriver.h"
 #include "Ultron.h"
+#include "LED.h"
+
+#define ARM_BUTTON_PIN 45
+
 
 Ultron ultron;
 MotorDriver dt;
+LED led; 
+Pixy2 pixy;
+
+#define X_CENTER         (pixy.frameWidth/2)
 
 int dw_pin_arr[4][2] = {{28,29},{24,25},{10,11},{8,9}}; // lf, lb, rf, rb
 int ow_pin_arr[4][2] = {{26,27},{22,23},{12,13},{40,41}};
 // bool is_left[4] = {1,1,0,0};
 // bool is_front[4] = {1,0,1,0};
-int redPin = 33;
-int greenPin = 37;
-int bluePin = 35;
   
 void shimmy() {
 	dt.stop_all();
@@ -55,34 +62,91 @@ void shimmy() {
 }
 
 void setup() {
-  delay(3000);
-  ultron.init(dw_pin_arr, ow_pin_arr);
-	dt.forward_slow();
-  Serial.begin(9600);
 
-  pinMode(redPin, OUTPUT); 
-  pinMode(greenPin, OUTPUT); 
-  pinMode(bluePin, OUTPUT); 
+  pixy.init();
+  pixy.setLamp(0,0);
+  pixy.changeProg("line_tracking");
+  
+  delay(3000);
+
+  dt.forward_slow();
+  
+  ultron.init(dw_pin_arr, ow_pin_arr);
+  Serial.begin(9600);
+  led.init();
 }
 
 
-int timer = 0;
+uint16_t timer = 0;
+
 void loop() {
-  if (timer % 10000 == 0) {
-//    float* data = ultron.read_dw_data();
-//    for (int i = 0; i < 4; i++) {
-//      Serial.println(data[i]);
-//    }
+
+  //Serial.println(timer);
+
+  timer++;
+  
+  if (timer >= 10000) {
+    Serial.println(millis());
+    // Robot NOT SAFE. Need to recover
+    //led.set_color(0, 0, 1);
+    // delay(1000);
   	if (!ultron.is_dw_safe()) {
   		Serial.println("NOT SAFE");
-      digitalWrite(greenPin, HIGH);
-      digitalWrite(bluePin, LOW);
-      digitalWrite(redPin, LOW);
+      led.set_color(1, 0, 0);
   		shimmy();
-      digitalWrite(greenPin, LOW);
-      digitalWrite(bluePin, LOW);
-      digitalWrite(redPin, LOW);
+      led.set_color(0, 0, 0);
   	}
+    led.set_color(0, 0, 0);
+   
+    timer = 0; 
+
+    Serial.println("Exit");
   }
-  timer++;
+  
+
+  
+
+//    // Robot SAFE. Drive normally
+//
+//    // Look for line
+//
+//    int8_t res;
+//    int32_t error; 
+//
+//    // Get latest data from Pixy, including main vector, new intersections and new barcodes.
+//    res = pixy.line.getMainFeatures();
+//
+//    // If NO LINE detected
+//    // If error or nothing detected, stop motors
+//    if (res<=0) 
+//    {
+//      dt.forward_slow();
+//      Serial.print("stop ");
+//      Serial.println(res);
+//      return;
+//    }
+//
+//    // We found the vector...
+//    if (res&LINE_VECTOR)
+//    {
+//      // Calculate heading error with respect to m_x1, which is the far-end of the vector,
+//      // the part of the vector we're heading toward.
+//      error = (int32_t)pixy.line.vectors->m_x1 - (int32_t)X_CENTER;
+//      Serial.println("Error");
+//      Serial.println(error);
+//  
+//      if (error > 5) {
+//        dt.turn_right();
+//      } else if (error < -5)
+//      {
+//        dt.turn_left();
+//      } else {
+//        dt.forward_slow();
+//        delay(100);
+//        dt.stop_all();
+//      }
+//    }
+      
+  //dt.stop_all();
+  //delay(100);
 }

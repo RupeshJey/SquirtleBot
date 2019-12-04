@@ -21,14 +21,14 @@ Ultron::Ultron()
 
 void Ultron::init(int (&dw_pin_arr)[4][2], int (&ow_pin_arr)[4][2]) {
   // initialize downward ultrasonics
-  for (int i; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     Ultrasonic us_new;
     us_new.init(dw_pin_arr[i], true);
     dwus_arr[i] = (us_new);
   }
 
   // initialize outward ultrasonics
-  for (int i; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     Ultrasonic us_new;
     us_new.init(ow_pin_arr[i], false);
     owus_arr[i] = (us_new);
